@@ -161,6 +161,82 @@ impl Map {
     }
 }
 
+struct Svg<'a> {
+    tile_size: usize,
+    offset: usize,
+    stroke_width: usize,
+    colour: &'a str,
+    width: usize,
+    height: usize,
+}
+
+impl<'a> Svg<'a> {
+    fn new(
+        tile_size: usize,
+        offset: usize,
+        map_width: usize,
+        map_height: usize,
+        stroke_width: usize,
+        colour: &'a str,
+    ) -> Self {
+        Svg {
+            tile_size,
+            offset,
+            stroke_width,
+            colour,
+            width: (map_width - 1) * tile_size + (offset * 2),
+            height: (map_height - 1) * tile_size + (offset * 2),
+        }
+    }
+
+    // TODO  use path
+    fn line(&self, x1: usize, y1: usize, x2: usize, y2: usize) -> String {
+        format!(
+            "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
+            x1 * self.tile_size + self.offset,
+            y1 * self.tile_size + self.offset,
+            x2 * self.tile_size + self.offset,
+            y2 * self.tile_size + self.offset,
+            self.colour,
+            self.stroke_width
+        )
+    }
+    fn start(&self, centre: Position) -> String {
+        let radius = 10;
+        format!("<circle cx=\"{}\" cy=\"{}\" stroke-width=\"{}\" fill=\"transparent\" stroke=\"{}\" r=\"{}\" />", centre.x * self.tile_size + self.offset, centre.y * self.tile_size + self.offset, self.stroke_width, self.colour, radius)
+    }
+
+    fn end(&self, centre: Position) -> String {
+        let size = 20;
+        format!("<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" stroke-width=\"{}\" fill=\"transparent\" stroke=\"{}\" />", (centre.x * self.tile_size + self.offset) - (size / 2), (centre.y * self.tile_size + self.offset) - (size / 2), size, size, self.stroke_width, self.colour)
+    }
+
+    fn draw(&self, map: &Map) -> String {
+        let mut output = format!(
+            "<svg viewBox=\"0 0 {} {}\" xmlns=\"http://www.w3.org/2000/svg\">",
+            self.width, self.height
+        );
+
+        map.paths.iter().for_each(|trail| {
+            let mut index = 0;
+            trail.windows(2).for_each(|slice| {
+                if index == 0 {
+                    output += &self.start(slice[0]);
+                }
+                // max index = 9, -1 because window
+                if index == 8 {
+                    output += &self.end(slice[1]);
+                }
+                output += &self.line(slice[0].x, slice[0].y, slice[1].x, slice[1].y);
+                index += 1;
+            });
+        });
+        output += "</svg>";
+
+        output
+    }
+}
+
 fn main() -> Result<(), io::Error> {
     let args: Vec<String> = args().collect();
 
@@ -170,30 +246,13 @@ fn main() -> Result<(), io::Error> {
 
     map.find_all_paths();
 
-    // TODO start and end
-    // TODO width of stroke
-    // TODO size of output
     // TODO gen input
+    // TODO svg struct display
 
-    let tile_size = 64;
-    let offset = 16;
-    let mut output =
-        String::from("<svg viewBox=\"0 0 2880 2880\" xmlns=\"http://www.w3.org/2000/svg\">");
+    let svg = Svg::new(64, 32, map.width, map.height, 2, "black");
+    let output = svg.draw(&map);
 
-    map.paths.iter().for_each(|trail| {
-        trail.windows(2).for_each(|slice| {
-            output += &*format!(
-                "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"black\" />\n",
-                slice[0].x * tile_size + offset,
-                slice[0].y * tile_size + offset,
-                slice[1].x * tile_size + offset,
-                slice[1].y * tile_size + offset
-            );
-        });
-    });
-    output += "</svg>";
-
-    write("./test.svg", output).expect("Couldn't write file");
+    write("./test.svg", output)?;
 
     Ok(())
 }
