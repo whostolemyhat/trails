@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashSet, VecDeque},
+    collections::VecDeque,
     env::args,
     fs::{read_to_string, write},
     io,
@@ -19,6 +19,7 @@ struct Map {
     width: usize,
     height: usize,
     trailheads: Vec<Position>,
+    paths: Vec<Vec<Position>>,
 }
 impl Map {
     fn parse(input: &str) -> Self {
@@ -54,6 +55,7 @@ impl Map {
             height,
             map,
             trailheads,
+            paths: vec![],
         }
     }
 
@@ -99,122 +101,62 @@ impl Map {
         neighbours
     }
 
-    // fn find_trail(&self) -> Vec<Vec<Position>> {
-    //     let mut total = 0;
-    //     let mut trails = vec![];
-
-    //     for pos in self.trailheads[..].iter() {
-    //         let mut visited = vec![];
-    //         let mut count = 0;
-    //         trails.push(self.search(&mut visited, pos, &mut count));
-    //         total += count;
-    //     }
-
-    //     trails
-    // }
-
-    // how many '9's can be reached? (dfs)
-    // fn search(
-    //     &self,
-    //     visited: &mut Vec<Position>,
-    //     current: &Position,
-    //     count: &mut usize,
-    // ) -> Vec<Position> {
-    //     let neighbours = self.neighbours(&current);
-    //     let val = self.map[self.coord(current)];
-    //     if self.map[self.coord(current)] == 9 {
-    //         *count += 1;
-    //     }
-
-    //     visited.push(*current);
-
-    //     for pos in neighbours {
-    //         let neighbour_val = self.map[self.coord(&pos)];
-    //         if neighbour_val == val + 1 && !visited.contains(&pos) {
-    //             self.search(visited, &pos, count);
-    //         }
-    //     }
-
-    //     visited.to_vec()
-    // }
-
-    fn rate_trails(&self) -> Vec<Vec<Position>> {
-        let mut trails = vec![];
-
-        for pos in self.trailheads[..].iter() {
-            let mut another = Vec::new();
-            let mut current_trail = Vec::new();
-            current_trail.push(*pos);
-            let mut visited = Vec::new();
-            visited.push(*pos);
-
-            let mut queue = VecDeque::new();
-            queue.push_back(*pos);
-
-            self.find_distinct(&mut visited, &mut queue, &mut another, &mut current_trail);
-            // make all trails start from trailhead
-            let expected_steps = 10;
-            let mapped: Vec<Vec<Position>> = another
-                .iter()
-                .map(|t| {
-                    // first one should always have correct no. steps
-                    // if t.len() < expected_steps {
-                    //     let beginning = &another[0][..(another[0].len() - t.len())];
-                    //     let mut full_trail = beginning.to_vec();
-                    //     full_trail.extend(t);
-                    //     full_trail
-                    // } else {
-                    t.to_vec()
-                    // }
-                })
-                .collect();
-
-            trails.extend(mapped);
-        }
-
-        trails
-    }
-
-    // find distinct paths (bfs)
-    fn find_distinct(
-        &self,
-        visited: &mut Vec<Position>,
-        queue: &mut VecDeque<Position>,
-        trails: &mut Vec<Vec<Position>>,
-        current_trail: &mut Vec<Position>,
-    ) {
-        if queue.len() == 0 {
-            dbg!("dead end", &current_trail);
-            current_trail.truncate(0);
-            return;
-        }
-
-        let current = queue.pop_front().expect("Failed to get current pos");
-        let neighbours = self.neighbours(&current);
+    // nicked from https://www.technical-recipes.com/2011/a-recursive-algorithm-to-find-all-paths-between-two-given-nodes/
+    fn get_paths(&mut self, visited: &mut VecDeque<Position>, end: u8) {
+        // get last element
+        let current = visited.back().expect("Empty");
         let val = self.map[self.coord(&current)];
 
-        // tODO truncate if don't get to 9
-        if val == 9 {
-            // push to trails
-            trails.push(current_trail.to_vec());
-        }
+        let neighbours = self.neighbours(&current);
 
-        for pos in neighbours {
+        // check for paths
+        for pos in &neighbours {
+            if visited.contains(pos) {
+                continue;
+            }
+
             let neighbour_val = self.map[self.coord(&pos)];
             if neighbour_val == val + 1 {
-                dbg!(current, val, pos, neighbour_val);
-                // already full
-                if current_trail.len() == 10 {
-                    dbg!("current trail full", &current_trail);
-                    // find last joining point
-                    current_trail.truncate((val + 1).into());
-                }
+                if neighbour_val == end {
+                    visited.push_back(*pos);
+                    let len = visited.len();
+                    let hops = len - 1;
 
-                queue.push_back(pos);
-                visited.push(pos);
-                current_trail.push(pos);
-                self.find_distinct(visited, queue, trails, current_trail);
+                    visited.make_contiguous();
+                    let path = visited.as_slices().0;
+                    self.paths.push(path.to_vec());
+
+                    visited.remove(hops);
+                    break;
+                }
             }
+        }
+
+        // recurse
+        for pos in neighbours {
+            let neighbour_val = self.map[self.coord(&pos)];
+            if visited.contains(&pos) || neighbour_val == end {
+                continue;
+            }
+            if neighbour_val == val + 1 {
+                visited.push_back(pos);
+                self.get_paths(visited, end);
+
+                let len = visited.len();
+                if len > 0 {
+                    visited.remove(len - 1);
+                }
+            }
+        }
+    }
+
+    fn find_all_paths(&mut self) {
+        let mut visited = VecDeque::new();
+        for start in self.trailheads.clone()[..].iter() {
+            visited.push_back(*start);
+            self.get_paths(&mut visited, 9);
+            // reset for each starting point
+            visited.truncate(0);
         }
     }
 }
@@ -224,17 +166,22 @@ fn main() -> Result<(), io::Error> {
 
     let filename = &args[1];
     let input = read_to_string(filename)?;
-    let map = Map::parse(&input);
+    let mut map = Map::parse(&input);
 
-    println!("Rating: {:?}", map.rate_trails());
-    // println!("Rating: {:?}", map.find_trail());
+    map.find_all_paths();
+
+    // TODO start and end
+    // TODO width of stroke
+    // TODO size of output
+    // TODO gen input
+
     let tile_size = 64;
     let offset = 16;
     let mut output =
-        String::from("<svg viewBox=\"0 0 480 480\" xmlns=\"http://www.w3.org/2000/svg\">");
-    map.rate_trails().iter().for_each(|trail| {
+        String::from("<svg viewBox=\"0 0 2880 2880\" xmlns=\"http://www.w3.org/2000/svg\">");
+
+    map.paths.iter().for_each(|trail| {
         trail.windows(2).for_each(|slice| {
-            // map.rate_trails()[63].windows(2).for_each(|slice| {
             output += &*format!(
                 "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"black\" />\n",
                 slice[0].x * tile_size + offset,
@@ -246,10 +193,7 @@ fn main() -> Result<(), io::Error> {
     });
     output += "</svg>";
 
-    // println!("{}", output);
     write("./test.svg", output).expect("Couldn't write file");
-
-    // dbg!(&map.rate_trails()[63]);
 
     Ok(())
 }
