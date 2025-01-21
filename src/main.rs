@@ -1,9 +1,13 @@
 use std::{
-    collections::VecDeque,
+    collections::{HashSet, VecDeque},
     env::args,
+    fmt::Display,
     fs::{read_to_string, write},
     io,
 };
+
+use rand::prelude::*;
+use rand_chacha::ChaCha8Rng;
 
 mod test;
 
@@ -282,7 +286,246 @@ impl<'a> Svg<'a> {
     }
 }
 
+#[derive(Debug)]
+struct Leaf {
+    depth: usize,
+    min_size: usize,
+    x: usize,
+    y: usize,
+    width: usize,
+    height: usize,
+    children: Vec<Leaf>,
+}
+
+impl Leaf {
+    fn new(x: usize, y: usize, width: usize, height: usize, min_size: usize, depth: usize) -> Self {
+        Leaf {
+            depth,
+            x,
+            y,
+            width,
+            height,
+            min_size,
+            children: vec![],
+        }
+    }
+
+    fn split(&mut self, rng: &mut ChaCha8Rng) -> bool {
+        // if over size and is big enough to split
+        // if depth < 2 always split otherwise it'll be boring
+        // otherwise 75% chance to split
+
+        // usually split
+        let should_split = if self.depth > 1 {
+            rng.gen_bool(0.75)
+        } else {
+            true
+        };
+        if should_split && self.width / 2 > self.min_size && self.height / 2 > self.min_size {
+            let horz_mid = self.width / 2;
+            let vert_mid = self.height / 2;
+            let north_west = Leaf::new(
+                self.x,
+                self.y,
+                horz_mid,
+                vert_mid,
+                self.min_size,
+                self.depth + 1,
+            );
+            let north_east = Leaf::new(
+                self.x + horz_mid,
+                self.y,
+                horz_mid,
+                vert_mid,
+                self.min_size,
+                self.depth + 1,
+            );
+            let south_east = Leaf::new(
+                self.x + horz_mid,
+                self.y + vert_mid,
+                horz_mid,
+                vert_mid,
+                self.min_size,
+                self.depth + 1,
+            );
+            let south_west = Leaf::new(
+                self.x,
+                self.y + vert_mid,
+                horz_mid,
+                vert_mid,
+                self.min_size,
+                self.depth + 1,
+            );
+
+            self.children.push(north_west);
+            self.children.push(north_east);
+            self.children.push(south_east);
+            self.children.push(south_west);
+
+            true
+        } else {
+            false
+        }
+
+        // if width > 25% height, split vert
+        // if height > 25% width, split horz
+        // // otherwise random
+
+        // let mut split_horz = rng.gen_bool(0.5);
+        // if self.width > self.height && (self.width as f32 / self.height as f32) >= 1.25 {
+        //     split_horz = false;
+        // } else if self.height > self.width && (self.height as f32 / self.width as f32) >= 1.25 {
+        //     split_horz = true;
+        // }
+
+        // let max = match split_horz {
+        //     true => self.height - self.min_size,
+        //     false => self.width - self.min_size,
+        // };
+
+        // // small enough so stop
+        // if max <= self.min_size {
+        //     return false;
+        // }
+        // let split_pos = rng.gen_range(self.min_size..max);
+
+        // if split_horz {
+        //     let left = Leaf::new(
+        //         self.x,
+        //         self.y,
+        //         self.width,
+        //         split_pos,
+        //         self.min_size,
+        //         self.depth + 1,
+        //     );
+        //     let right = Leaf::new(
+        //         self.x,
+        //         self.y + split_pos,
+        //         self.width,
+        //         self.height - split_pos,
+        //         self.min_size,
+        //         self.depth + 1,
+        //     );
+        //     self.children.push(left);
+        //     self.children.push(right);
+        // } else {
+        //     let left = Leaf::new(
+        //         self.x,
+        //         self.y,
+        //         split_pos,
+        //         self.height,
+        //         self.min_size,
+        //         self.depth + 1,
+        //     );
+        //     let right = Leaf::new(
+        //         self.x + split_pos,
+        //         self.y,
+        //         self.width - split_pos,
+        //         self.height,
+        //         self.min_size,
+        //         self.depth + 1,
+        //     );
+        //     self.children.push(left);
+        //     self.children.push(right);
+        // }
+
+        // true
+    }
+
+    fn can_split(&self) -> bool {
+        self.children.len() == 0
+    }
+
+    fn generate(&mut self, rng: &mut ChaCha8Rng) {
+        if self.can_split() {
+            if self.split(rng) {
+                self.children
+                    .iter_mut()
+                    .for_each(|child| child.generate(rng));
+            }
+        }
+    }
+
+    fn add_start(&self, input: &mut Input, rng: &mut ChaCha8Rng) {
+        if self.children.len() > 0 {
+            self.children.iter().for_each(|child| {
+                child.add_start(input, rng);
+            });
+        } else {
+            let x = rng.gen_range(self.x..self.x + self.width);
+            let y = rng.gen_range(self.y..self.y + self.height);
+            input.starting_points.insert(Position { x, y });
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Input {
+    map: Vec<char>,
+    width: usize,
+    height: usize,
+    starting_points: HashSet<Position>,
+}
+
+impl Input {
+    fn new(width: usize, height: usize) -> Self {
+        let len = width * height;
+        Input {
+            map: vec!['.'; len],
+            width,
+            height,
+            starting_points: HashSet::new(),
+        }
+    }
+
+    fn position(&self, coord: usize) -> Position {
+        Position {
+            x: (coord % self.width),
+            y: (coord / self.width),
+        }
+    }
+}
+
+impl Display for Input {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.map.iter().enumerate().for_each(|(index, item)| {
+            let pos = self.position(index);
+            // dbg!(&pos, self.starting_points.get(&pos));
+            if self.starting_points.get(&pos).is_some() && item == &'.' {
+                write!(f, "0").expect("Failed to write antinode");
+            } else {
+                write!(f, "{}", item).expect("Failed to write item");
+            }
+            if (index + 1) % self.width == 0 {
+                write!(f, "\n").expect("Failed to add new line");
+            }
+        });
+        Ok(())
+    }
+}
+
 fn main() -> Result<(), io::Error> {
+    let mut rng = ChaCha8Rng::seed_from_u64(2);
+
+    let width = 16;
+    let height = 16;
+    let mut root = Leaf::new(0, 0, width, height, 2, 0);
+    root.generate(&mut rng);
+
+    println!("{:#?}", root);
+
+    let mut input = Input::new(width, height);
+
+    // let mut starting_points: Vec<Position> = vec![];
+    root.add_start(&mut input, &mut rng);
+
+    println!("{}", input);
+    println!("{:?}", input.starting_points);
+    // for node in root
+    // if leaf
+    // pick a point in leaf
+    // add to starting points
+
     let args: Vec<String> = args().collect();
 
     let filename = &args[1];
@@ -292,6 +535,10 @@ fn main() -> Result<(), io::Error> {
     map.find_all_paths();
 
     // TODO gen input
+    // quadtree
+    // min size for 0-9 is 4x3
+    // 6x6
+    // 1-3 starts per node
     // TODO svg struct display
 
     let svg = Svg::new(64, 32, map.width, map.height, 2, "black", 10);
