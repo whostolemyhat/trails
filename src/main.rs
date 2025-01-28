@@ -6,7 +6,7 @@ use std::{
     io,
 };
 
-use rand::prelude::*;
+use rand::{distributions::Standard, prelude::*};
 use rand_chacha::ChaCha8Rng;
 
 mod test;
@@ -446,25 +446,43 @@ impl Leaf {
         }
     }
 
-    fn add_start(&self, input: &mut Input, rng: &mut ChaCha8Rng) {
+    fn add_start(&self, starting_points: &mut HashSet<Position>, rng: &mut ChaCha8Rng) {
         if self.children.len() > 0 {
             self.children.iter().for_each(|child| {
-                child.add_start(input, rng);
+                child.add_start(starting_points, rng);
             });
         } else {
             let x = rng.gen_range(self.x..self.x + self.width);
             let y = rng.gen_range(self.y..self.y + self.height);
-            input.starting_points.insert(Position { x, y });
+            starting_points.insert(Position { x, y });
         }
     }
 }
+
+// enum Direction {
+//     North,
+//     East,
+//     South,
+//     West,
+// }
+
+// impl Distribution<Direction> for Standard {
+//     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Direction {
+//         match rng.gen_range(0..=3) {
+//             0 => Direction::North,
+//             1 => Direction::East,
+//             2 => Direction::South,
+//             _ => Direction::West,
+//         }
+//     }
+// }
 
 #[derive(Debug)]
 struct Input {
     map: Vec<char>,
     width: usize,
     height: usize,
-    starting_points: HashSet<Position>,
+    // starting_points: HashSet<Position>,
 }
 
 impl Input {
@@ -474,7 +492,7 @@ impl Input {
             map: vec!['.'; len],
             width,
             height,
-            starting_points: HashSet::new(),
+            // starting_points: HashSet::new(),
         }
     }
 
@@ -484,6 +502,185 @@ impl Input {
             y: (coord / self.width),
         }
     }
+
+    fn coord(&self, pos: &Position) -> usize {
+        (pos.y * self.width) + pos.x
+    }
+
+    fn neighbours(&self, pos: &Position) -> Vec<Position> {
+        let mut neighbours = vec![];
+
+        if pos.y > 0 {
+            let neighbour = Position {
+                x: pos.x,
+                y: pos.y - 1,
+            };
+            if self.map[self.coord(&neighbour)] == '.' {
+                neighbours.push(neighbour);
+            }
+        }
+        if pos.y < self.height - 1 {
+            let neighbour = Position {
+                x: pos.x,
+                y: pos.y + 1,
+            };
+            if self.map[self.coord(&neighbour)] == '.' {
+                neighbours.push(neighbour);
+            }
+        }
+
+        if pos.x < self.width - 1 {
+            let neighbour = Position {
+                x: pos.x + 1,
+                y: pos.y,
+            };
+            if self.map[self.coord(&neighbour)] == '.' {
+                neighbours.push(neighbour);
+            }
+        }
+        if pos.x > 0 {
+            let neighbour = Position {
+                x: pos.x - 1,
+                y: pos.y,
+            };
+            if self.map[self.coord(&neighbour)] == '.' {
+                neighbours.push(neighbour);
+            }
+        }
+        neighbours
+    }
+
+    fn pick_direction(
+        &self,
+        start: &Position,
+        rng: &mut ChaCha8Rng,
+        mut tries: u8,
+    ) -> Option<Position> {
+        // TODO just get neighbours instead
+        let options = self.neighbours(start);
+        if options.len() == 0 {
+            return None;
+        }
+
+        // tries += 1;
+
+        // if tries > 4 {
+        //     return None;
+        // }
+
+        match options.choose(rng) {
+            None => return None,
+            Some(pos) => {
+                let current_val = self.map[(start.y * self.width) + start.x];
+                let coord = (pos.y * self.width) + pos.x;
+                let val = self.map[coord];
+
+                // if val != '.' {
+                //     return self.pick_direction(&start, rng, tries);
+                // }
+
+                Some(*pos)
+            }
+        }
+
+        // let direction: Direction = rng.gen();
+
+        // let pos = match direction {
+        //     Direction::North => {
+        //         if start.x == 0 {
+        //             return self.pick_direction(start, rng, tries);
+        //         }
+        //         Position {
+        //             x: start.x - 1,
+        //             y: start.y,
+        //         }
+        //     }
+        //     Direction::East => {
+        //         if start.y == self.width {
+        //             return self.pick_direction(start, rng, tries);
+        //         }
+        //         Position {
+        //             x: start.x,
+        //             y: start.y + 1,
+        //         }
+        //     }
+        //     Direction::South => {
+        //         if start.x == self.height {
+        //             return self.pick_direction(start, rng, tries);
+        //         }
+        //         Position {
+        //             x: start.x + 1,
+        //             y: start.y,
+        //         }
+        //     }
+        //     Direction::West => {
+        //         if start.y == 0 {
+        //             return self.pick_direction(start, rng, tries);
+        //         }
+        //         Position {
+        //             x: start.x,
+        //             y: start.y - 1,
+        //         }
+        //     }
+        // };
+    }
+
+    fn random_walk(&mut self, starting_points: &HashSet<Position>, rng: &mut ChaCha8Rng) {
+        // each start point
+        // do a random walk to 9
+        // if already set and not next num
+        // pick another direction
+        starting_points.iter().for_each(|start| {
+            // let mut current = Position { x: 2, y: 4 };
+            let mut current = *start;
+            let current_coord = self.coord(&current);
+            self.map[current_coord] = '0';
+
+            for i in 0..9 {
+                let pos = self.pick_direction(&current, rng, 0);
+                dbg!(&pos);
+
+                match pos {
+                    None => return,
+                    Some(pos) => {
+                        let coord = (pos.y * self.width) + pos.x;
+                        dbg!(i);
+                        current = pos;
+
+                        let val = self.map[coord];
+                        if val == '.' {
+                            dbg!(val);
+
+                            // update map - Rust unhappy with multiple ref to self
+                            let mut map = std::mem::take(&mut self.map);
+                            map[coord] = char::from_digit(i as u32 + 1, 10)
+                                .expect("Failed to convert to char");
+                            self.map = map;
+                        } else if val.to_digit(10).expect("Failed to parse current value")
+                            != i as u32 + 1
+                        {
+                            dbg!("not adding");
+                            return;
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    fn fill(&mut self, rng: &mut ChaCha8Rng) {
+        self.map = self
+            .map
+            .iter()
+            .map(|i| {
+                if *i == '.' {
+                    return char::from_digit(rng.gen_range(0..=9), 10)
+                        .expect("Couldn't parse number");
+                }
+                *i
+            })
+            .collect()
+    }
 }
 
 impl Display for Input {
@@ -491,11 +688,11 @@ impl Display for Input {
         self.map.iter().enumerate().for_each(|(index, item)| {
             let pos = self.position(index);
             // dbg!(&pos, self.starting_points.get(&pos));
-            if self.starting_points.get(&pos).is_some() && item == &'.' {
-                write!(f, "0").expect("Failed to write antinode");
-            } else {
-                write!(f, "{}", item).expect("Failed to write item");
-            }
+            // if self.starting_points.get(&pos).is_some() && item == &'.' {
+            // write!(f, "0").expect("Failed to write antinode");
+            // } else {
+            write!(f, "{}", item).expect("Failed to write item");
+            // }
             if (index + 1) % self.width == 0 {
                 write!(f, "\n").expect("Failed to add new line");
             }
@@ -505,32 +702,38 @@ impl Display for Input {
 }
 
 fn main() -> Result<(), io::Error> {
-    let mut rng = ChaCha8Rng::seed_from_u64(2);
+    let seed = 14;
+    let mut rng = ChaCha8Rng::seed_from_u64(seed);
 
     let width = 16;
     let height = 16;
     let mut root = Leaf::new(0, 0, width, height, 2, 0);
     root.generate(&mut rng);
 
-    println!("{:#?}", root);
+    // println!("{:#?}", root);
 
     let mut input = Input::new(width, height);
 
     // let mut starting_points: Vec<Position> = vec![];
-    root.add_start(&mut input, &mut rng);
+    let mut starting_points = HashSet::new();
+    root.add_start(&mut starting_points, &mut rng);
+
+    input.random_walk(&starting_points, &mut rng);
+    input.fill(&mut rng);
 
     println!("{}", input);
-    println!("{:?}", input.starting_points);
+    println!("{:?}", &starting_points);
     // for node in root
     // if leaf
     // pick a point in leaf
     // add to starting points
 
-    let args: Vec<String> = args().collect();
-
-    let filename = &args[1];
-    let input = read_to_string(filename)?;
-    let mut map = Map::parse(&input);
+    // let args: Vec<String> = args().collect();
+    //
+    // let filename = &args[1];
+    // let input = read_to_string(filename)?;
+    // let mut map = Map::parse(&input);
+    let mut map = Map::parse(&format!("{}", input));
 
     map.find_all_paths();
 
