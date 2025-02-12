@@ -100,7 +100,7 @@ impl Input {
         trail.to_vec()
     }
 
-    pub fn add_trails(&mut self, starting_points: &Vec<Position>, rng: &mut ChaCha8Rng) {
+    pub fn add_trails(&mut self, starting_points: &[Position], rng: &mut ChaCha8Rng) {
         let mut trails = vec![];
 
         for pos in starting_points.iter() {
@@ -139,7 +139,7 @@ impl Display for Input {
         self.map.iter().enumerate().for_each(|(index, item)| {
             write!(f, "{}", item).expect("Failed to write item");
             if (index + 1) % self.width == 0 {
-                write!(f, "\n").expect("Failed to add new line");
+                writeln!(f).expect("Failed to add new line");
             }
         });
         Ok(())

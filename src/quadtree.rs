@@ -94,21 +94,19 @@ impl Leaf {
     }
 
     fn can_split(&self) -> bool {
-        self.children.len() == 0
+        self.children.is_empty()
     }
 
     pub fn generate(&mut self, rng: &mut ChaCha8Rng) {
-        if self.can_split() {
-            if self.split(rng) {
-                self.children
-                    .iter_mut()
-                    .for_each(|child| child.generate(rng));
-            }
+        if self.can_split() && self.split(rng) {
+            self.children
+                .iter_mut()
+                .for_each(|child| child.generate(rng));
         }
     }
 
     pub fn add_start(&self, starting_points: &mut Vec<Position>, rng: &mut ChaCha8Rng) {
-        if self.children.len() > 0 {
+        if !self.children.is_empty() {
             self.children.iter().for_each(|child| {
                 child.add_start(starting_points, rng);
             });

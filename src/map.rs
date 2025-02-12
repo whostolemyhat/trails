@@ -91,9 +91,9 @@ impl Map {
     fn get_paths(&mut self, visited: &mut VecDeque<Position>, end: u8) {
         // get last element
         let current = visited.back().expect("Empty");
-        let val = self.map[self.coord(&current)];
+        let val = self.map[self.coord(current)];
 
-        let neighbours = self.neighbours(&current);
+        let neighbours = self.neighbours(current);
 
         // check for paths
         for pos in &neighbours {
@@ -101,20 +101,18 @@ impl Map {
                 continue;
             }
 
-            let neighbour_val = self.map[self.coord(&pos)];
-            if neighbour_val == val + 1 {
-                if neighbour_val == end {
-                    visited.push_back(*pos);
-                    let len = visited.len();
-                    let hops = len - 1;
+            let neighbour_val = self.map[self.coord(pos)];
+            if neighbour_val == val + 1 && neighbour_val == end {
+                visited.push_back(*pos);
+                let len = visited.len();
+                let hops = len - 1;
 
-                    visited.make_contiguous();
-                    let path = visited.as_slices().0;
-                    self.paths.push(path.to_vec());
+                visited.make_contiguous();
+                let path = visited.as_slices().0;
+                self.paths.push(path.to_vec());
 
-                    visited.remove(hops);
-                    break;
-                }
+                visited.remove(hops);
+                break;
             }
         }
 
