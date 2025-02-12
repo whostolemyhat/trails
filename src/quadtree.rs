@@ -1,11 +1,9 @@
-use std::collections::HashSet;
-
 use rand::Rng;
 use rand_chacha::ChaCha8Rng;
 
-use crate::Position;
+use crate::map::Position;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Leaf {
     pub depth: usize,
     pub min_size: usize,
@@ -109,7 +107,7 @@ impl Leaf {
         }
     }
 
-    pub fn add_start(&self, starting_points: &mut HashSet<Position>, rng: &mut ChaCha8Rng) {
+    pub fn add_start(&self, starting_points: &mut Vec<Position>, rng: &mut ChaCha8Rng) {
         if self.children.len() > 0 {
             self.children.iter().for_each(|child| {
                 child.add_start(starting_points, rng);
@@ -117,36 +115,881 @@ impl Leaf {
         } else {
             let x = rng.gen_range(self.x..self.x + self.width);
             let y = rng.gen_range(self.y..self.y + self.height);
-            starting_points.insert(Position { x, y });
+            starting_points.push(Position { x, y });
 
-            // let x = rng.gen_range(self.x..self.x + self.width);
-            // let y = rng.gen_range(self.y..self.y + self.height);
-            // starting_points.insert(Position { x, y });
+            let x = rng.gen_range(self.x..self.x + self.width);
+            let y = rng.gen_range(self.y..self.y + self.height);
+            starting_points.push(Position { x, y });
         }
     }
+}
 
-    pub fn draw(&self) -> String {
-        let tile_size = 64;
-        let mut output = format!(
-            "<svg viewBox=\"0 0 {} {}\" xmlns=\"http://www.w3.org/2000/svg\">",
-            self.width * tile_size,
-            self.height * tile_size
+#[cfg(test)]
+mod test {
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+
+    use crate::{map::Position, quadtree::Leaf};
+
+    #[test]
+    fn it_should_create_new_tree() {
+        let root = Leaf::new(0, 0, 6, 6, 3, 0);
+        assert_eq!(
+            root,
+            Leaf {
+                depth: 0,
+                min_size: 3,
+                x: 0,
+                y: 0,
+                width: 6,
+                height: 6,
+                children: vec![]
+            }
         );
-
-        output += &self.draw_leaves(tile_size);
-
-        output += "</svg>";
-
-        output
     }
 
-    fn draw_leaves(&self, tile_size: usize) -> String {
-        self.children.iter().map(|leaf| if leaf.can_split() {
-          format!("
-          <rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" />",
-          (leaf.x * tile_size), (leaf.y * tile_size), leaf.width * tile_size, leaf.height * tile_size)
-        } else {
-          leaf.draw_leaves(tile_size)
-        }).collect()
+    #[test]
+    fn it_should_make_children() {
+        let mut root = Leaf::new(0, 0, 16, 16, 2, 0);
+        // test seed
+        let seed = 123;
+        let mut rng = ChaCha8Rng::seed_from_u64(seed);
+        root.generate(&mut rng);
+        assert_eq!(
+            root,
+            Leaf {
+                depth: 0,
+                min_size: 2,
+                x: 0,
+                y: 0,
+                width: 16,
+                height: 16,
+                children: vec![
+                    Leaf {
+                        depth: 1,
+                        min_size: 2,
+                        x: 0,
+                        y: 0,
+                        width: 8,
+                        height: 8,
+                        children: vec![
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 0,
+                                y: 0,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 0,
+                                        y: 0,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 2,
+                                        y: 0,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 2,
+                                        y: 2,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 0,
+                                        y: 2,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 4,
+                                y: 0,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 4,
+                                        y: 0,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 6,
+                                        y: 0,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 6,
+                                        y: 2,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 4,
+                                        y: 2,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 4,
+                                y: 4,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 4,
+                                        y: 4,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 6,
+                                        y: 4,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 6,
+                                        y: 6,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 4,
+                                        y: 6,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 0,
+                                y: 4,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 0,
+                                        y: 4,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 2,
+                                        y: 4,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 2,
+                                        y: 6,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 0,
+                                        y: 6,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    Leaf {
+                        depth: 1,
+                        min_size: 2,
+                        x: 8,
+                        y: 0,
+                        width: 8,
+                        height: 8,
+                        children: vec![
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 8,
+                                y: 0,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 8,
+                                        y: 0,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 10,
+                                        y: 0,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 10,
+                                        y: 2,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 8,
+                                        y: 2,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 12,
+                                y: 0,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 12,
+                                        y: 0,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 14,
+                                        y: 0,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 14,
+                                        y: 2,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 12,
+                                        y: 2,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 12,
+                                y: 4,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 12,
+                                        y: 4,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 14,
+                                        y: 4,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 14,
+                                        y: 6,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 12,
+                                        y: 6,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 8,
+                                y: 4,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 8,
+                                        y: 4,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 10,
+                                        y: 4,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 10,
+                                        y: 6,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 8,
+                                        y: 6,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    Leaf {
+                        depth: 1,
+                        min_size: 2,
+                        x: 8,
+                        y: 8,
+                        width: 8,
+                        height: 8,
+                        children: vec![
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 8,
+                                y: 8,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 8,
+                                        y: 8,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 10,
+                                        y: 8,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 10,
+                                        y: 10,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 8,
+                                        y: 10,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 12,
+                                y: 8,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 12,
+                                        y: 8,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 14,
+                                        y: 8,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 14,
+                                        y: 10,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 12,
+                                        y: 10,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 12,
+                                y: 12,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 12,
+                                        y: 12,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 14,
+                                        y: 12,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 14,
+                                        y: 14,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 12,
+                                        y: 14,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 8,
+                                y: 12,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 8,
+                                        y: 12,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 10,
+                                        y: 12,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 10,
+                                        y: 14,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 8,
+                                        y: 14,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    Leaf {
+                        depth: 1,
+                        min_size: 2,
+                        x: 0,
+                        y: 8,
+                        width: 8,
+                        height: 8,
+                        children: vec![
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 0,
+                                y: 8,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 0,
+                                        y: 8,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 2,
+                                        y: 8,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 2,
+                                        y: 10,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 0,
+                                        y: 10,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 4,
+                                y: 8,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 4,
+                                        y: 8,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 6,
+                                        y: 8,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 6,
+                                        y: 10,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 4,
+                                        y: 10,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 4,
+                                y: 12,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 4,
+                                        y: 12,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 6,
+                                        y: 12,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 6,
+                                        y: 14,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 4,
+                                        y: 14,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            },
+                            Leaf {
+                                depth: 2,
+                                min_size: 2,
+                                x: 0,
+                                y: 12,
+                                width: 4,
+                                height: 4,
+                                children: vec![
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 0,
+                                        y: 12,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 2,
+                                        y: 12,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 2,
+                                        y: 14,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    },
+                                    Leaf {
+                                        depth: 3,
+                                        min_size: 2,
+                                        x: 0,
+                                        y: 14,
+                                        width: 2,
+                                        height: 2,
+                                        children: vec![]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        );
+    }
+
+    #[test]
+    fn it_should_add_start_nodes() {
+        let root = Leaf {
+            depth: 0,
+            min_size: 3,
+            x: 0,
+            y: 0,
+            width: 6,
+            height: 6,
+            children: vec![
+                Leaf {
+                    depth: 1,
+                    min_size: 3,
+                    x: 0,
+                    y: 0,
+                    width: 3,
+                    height: 3,
+                    children: vec![],
+                },
+                Leaf {
+                    depth: 1,
+                    min_size: 3,
+                    x: 0,
+                    y: 0,
+                    width: 3,
+                    height: 3,
+                    children: vec![],
+                },
+            ],
+        };
+
+        let seed = 123;
+        let mut rng = ChaCha8Rng::seed_from_u64(seed);
+        let mut starting_points = Vec::new();
+        root.add_start(&mut starting_points, &mut rng);
+
+        assert_eq!(
+            starting_points,
+            vec![
+                Position { x: 2, y: 0 },
+                Position { x: 1, y: 2 },
+                Position { x: 1, y: 1 },
+                Position { x: 2, y: 2 }
+            ]
+        );
     }
 }
