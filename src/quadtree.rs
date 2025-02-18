@@ -1,5 +1,4 @@
-use rand::Rng;
-use rand_chacha::ChaCha8Rng;
+use rand::{rngs::SmallRng, Rng};
 
 use crate::map::Position;
 
@@ -34,7 +33,7 @@ impl Leaf {
         }
     }
 
-    fn split(&mut self, rng: &mut ChaCha8Rng) -> bool {
+    fn split(&mut self, rng: &mut SmallRng) -> bool {
         // if over size and is big enough to split
         // if depth < 2 always split otherwise it'll be boring
         // otherwise 75% chance to split
@@ -42,7 +41,7 @@ impl Leaf {
         // usually split
         // TODO base depth on size
         let should_split = if self.depth > 2 {
-            rng.gen_bool(0.85)
+            rng.random_bool(0.85)
         } else {
             true
         };
@@ -97,7 +96,7 @@ impl Leaf {
         self.children.is_empty()
     }
 
-    pub fn generate(&mut self, rng: &mut ChaCha8Rng) {
+    pub fn generate(&mut self, rng: &mut SmallRng) {
         if self.can_split() && self.split(rng) {
             self.children
                 .iter_mut()
@@ -105,27 +104,28 @@ impl Leaf {
         }
     }
 
-    pub fn add_start(&self, starting_points: &mut Vec<Position>, rng: &mut ChaCha8Rng) {
+    pub fn add_start(&self, starting_points: &mut Vec<Position>, rng: &mut SmallRng, density: u8) {
         if !self.children.is_empty() {
             self.children.iter().for_each(|child| {
-                child.add_start(starting_points, rng);
+                child.add_start(starting_points, rng, density);
             });
         } else {
-            let x = rng.gen_range(self.x..self.x + self.width);
-            let y = rng.gen_range(self.y..self.y + self.height);
-            starting_points.push(Position { x, y });
+            for _ in 0..density {
+                let x = rng.random_range(self.x..self.x + self.width);
+                let y = rng.random_range(self.y..self.y + self.height);
+                starting_points.push(Position { x, y });
 
-            let x = rng.gen_range(self.x..self.x + self.width);
-            let y = rng.gen_range(self.y..self.y + self.height);
-            starting_points.push(Position { x, y });
+                // let x = rng.random_range(self.x..self.x + self.width);
+                // let y = rng.random_range(self.y..self.y + self.height);
+                // starting_points.push(Position { x, y });
+            }
         }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use rand::SeedableRng;
-    use rand_chacha::ChaCha8Rng;
+    use rand::{rngs::SmallRng, SeedableRng};
 
     use crate::{map::Position, quadtree::Leaf};
 
@@ -151,7 +151,7 @@ mod test {
         let mut root = Leaf::new(0, 0, 16, 16, 2, 0);
         // test seed
         let seed = 123;
-        let mut rng = ChaCha8Rng::seed_from_u64(seed);
+        let mut rng = SmallRng::seed_from_u64(seed);
         root.generate(&mut rng);
         assert_eq!(
             root,
@@ -976,16 +976,16 @@ mod test {
         };
 
         let seed = 123;
-        let mut rng = ChaCha8Rng::seed_from_u64(seed);
+        let mut rng = SmallRng::seed_from_u64(seed);
         let mut starting_points = Vec::new();
-        root.add_start(&mut starting_points, &mut rng);
+        root.add_start(&mut starting_points, &mut rng, 2);
 
         assert_eq!(
             starting_points,
             vec![
-                Position { x: 2, y: 0 },
                 Position { x: 1, y: 2 },
                 Position { x: 1, y: 1 },
+                Position { x: 0, y: 1 },
                 Position { x: 2, y: 2 }
             ]
         );

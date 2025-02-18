@@ -1,7 +1,5 @@
-use std::fmt::Display;
-
 use rand::prelude::*;
-use rand_chacha::ChaCha8Rng;
+use std::fmt::Display;
 
 use crate::map::Position;
 
@@ -78,7 +76,7 @@ impl Input {
         visited: &mut Vec<Position>,
         trail: &mut Vec<Position>,
         current: &Position,
-        mut rng: &mut ChaCha8Rng,
+        mut rng: &mut SmallRng,
     ) -> Vec<Position> {
         let current_val = trail.len();
         trail.push(*current);
@@ -100,7 +98,7 @@ impl Input {
         trail.to_vec()
     }
 
-    pub fn add_trails(&mut self, starting_points: &[Position], rng: &mut ChaCha8Rng) {
+    pub fn add_trails(&mut self, starting_points: &[Position], rng: &mut SmallRng) {
         let mut trails = vec![];
 
         for pos in starting_points.iter() {
@@ -119,13 +117,13 @@ impl Input {
         }
     }
 
-    pub fn fill(&mut self, rng: &mut ChaCha8Rng) {
+    pub fn fill(&mut self, rng: &mut SmallRng) {
         self.map = self
             .map
             .iter()
             .map(|i| {
                 if *i == '.' {
-                    return char::from_digit(rng.gen_range(0..=9), 10)
+                    return char::from_digit(rng.random_range(0..=9), 10)
                         .expect("Couldn't parse number");
                 }
                 *i
@@ -148,8 +146,7 @@ impl Display for Input {
 
 #[cfg(test)]
 mod test {
-    use rand::SeedableRng;
-    use rand_chacha::ChaCha8Rng;
+    use rand::{rngs::SmallRng, SeedableRng};
 
     use crate::{input::Input, map::Position};
 
@@ -179,7 +176,7 @@ mod test {
         ];
 
         let seed = 123;
-        let mut rng = ChaCha8Rng::seed_from_u64(seed);
+        let mut rng = SmallRng::seed_from_u64(seed);
 
         input.add_trails(&starting_points, &mut rng);
 
@@ -189,9 +186,9 @@ mod test {
                 width: 6,
                 height: 6,
                 map: vec![
-                    '7', '0', '1', '0', '8', '7', '6', '3', '2', '8', '9', '6', '9', '4', '5', '4',
-                    '4', '5', '3', '2', '1', '5', '3', '2', '4', '8', '0', '6', '.', '1', '5', '6',
-                    '7', '7', '8', '0'
+                    '1', '0', '.', '0', '1', '.', '2', '.', '9', '.', '2', '.', '3', '4', '8', '4',
+                    '3', '9', '8', '5', '7', '5', '6', '8', '7', '6', '0', '1', '6', '7', '9', '4',
+                    '3', '2', '5', '.'
                 ]
             }
         );
@@ -208,7 +205,7 @@ mod test {
         ];
 
         let seed = 123;
-        let mut rng = ChaCha8Rng::seed_from_u64(seed);
+        let mut rng = SmallRng::seed_from_u64(seed);
 
         input.add_trails(&starting_points, &mut rng);
         input.fill(&mut rng);
@@ -219,13 +216,13 @@ mod test {
                 width: 10,
                 height: 10,
                 map: vec![
-                    '0', '0', '1', '0', '1', '9', '5', '9', '9', '8', '9', '5', '2', '3', '2', '3',
-                    '6', '0', '7', '2', '8', '7', '7', '4', '5', '4', '8', '6', '8', '8', '7', '4',
-                    '6', '5', '6', '2', '3', '4', '5', '8', '8', '8', '0', '6', '7', '1', '7', '0',
-                    '6', '7', '9', '5', '1', '7', '8', '0', '9', '1', '7', '0', '8', '7', '2', '6',
-                    '5', '8', '3', '3', '8', '9', '7', '4', '3', '3', '3', '7', '6', '6', '4', '1',
-                    '6', '5', '9', '6', '5', '2', '6', '5', '4', '5', '6', '0', '1', '0', '4', '4',
-                    '9', '3', '6', '3'
+                    '1', '0', '5', '0', '7', '8', '9', '2', '4', '4', '2', '6', '0', '1', '6', '5',
+                    '9', '1', '6', '2', '3', '4', '0', '2', '3', '4', '8', '4', '7', '3', '8', '5',
+                    '9', '8', '5', '6', '7', '6', '1', '1', '7', '6', '0', '1', '4', '9', '8', '5',
+                    '1', '8', '9', '2', '1', '2', '3', '0', '1', '4', '6', '5', '6', '7', '7', '5',
+                    '9', '6', '2', '3', '7', '0', '8', '1', '4', '9', '6', '8', '1', '4', '7', '5',
+                    '2', '4', '1', '1', '2', '9', '2', '1', '3', '4', '6', '4', '2', '2', '4', '5',
+                    '1', '1', '4', '3'
                 ]
             }
         );
