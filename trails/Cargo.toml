@@ -1,0 +1,23 @@
+[package]
+name = "trails"
+version = "0.1.0"
+edition = "2021"
+authors = ["James Baum <@whostolemyhat"]
+description = "Procedurally generated line art"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+rand = { version = "0.9.0", features = ["small_rng"] }
+rand_seeder = "0.4.0"
+
+[lib]
+name = "trails"
+path = "src/lib.rs"
+
+
+# cargo run --features cli 
+# [[bin]]
+# name = "trails_cli"
+# path = "src/main.rs"
