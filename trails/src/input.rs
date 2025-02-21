@@ -146,7 +146,7 @@ impl Display for Input {
 
 #[cfg(test)]
 mod test {
-    use rand::{rngs::SmallRng, SeedableRng};
+    use rand::{SeedableRng, rngs::SmallRng};
 
     use crate::{input::Input, map::Position};
 

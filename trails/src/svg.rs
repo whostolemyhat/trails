@@ -36,20 +36,30 @@ impl<'a> Svg<'a> {
     fn line(&self, x1: usize, y1: usize, x2: usize, y2: usize) -> String {
         format!(
             "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\" stroke-linecap=\"square\" />\n",
-            x1,
-            y1,
-            x2,
-            y2,
-            self.colour,
-            self.stroke_width
+            x1, y1, x2, y2, self.colour, self.stroke_width
         )
     }
     fn start(&self, centre: Position) -> String {
-        format!("<circle cx=\"{}\" cy=\"{}\" stroke-width=\"{}\" fill=\"transparent\" stroke=\"{}\" r=\"{}\" />", centre.x * self.tile_size + self.offset, centre.y * self.tile_size + self.offset, self.stroke_width, self.colour, self.end_radius)
+        format!(
+            "<circle cx=\"{}\" cy=\"{}\" stroke-width=\"{}\" fill=\"transparent\" stroke=\"{}\" r=\"{}\" />",
+            centre.x * self.tile_size + self.offset,
+            centre.y * self.tile_size + self.offset,
+            self.stroke_width,
+            self.colour,
+            self.end_radius
+        )
     }
 
     fn end(&self, centre: Position) -> String {
-        format!("<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" stroke-width=\"{}\" fill=\"transparent\" stroke=\"{}\" />", (centre.x * self.tile_size + self.offset) - self.end_radius, (centre.y * self.tile_size + self.offset) - self.end_radius, self.end_radius * 2, self.end_radius * 2, self.stroke_width, self.colour)
+        format!(
+            "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" stroke-width=\"{}\" fill=\"transparent\" stroke=\"{}\" />",
+            (centre.x * self.tile_size + self.offset) - self.end_radius,
+            (centre.y * self.tile_size + self.offset) - self.end_radius,
+            self.end_radius * 2,
+            self.end_radius * 2,
+            self.stroke_width,
+            self.colour
+        )
     }
 
     fn to_pixel(&self, point: usize) -> usize {
@@ -160,6 +170,9 @@ mod test {
         let svg = Svg::new(64, 32, 10, 10, 2, "black", 10);
         let output = svg.draw(&map);
 
-        assert_eq!(output, "<svg viewBox=\"0 0 640 640\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"160\" cy=\"288\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" r=\"10\" /><line x1=\"160\" y1=\"298\" x2=\"160\" y2=\"352\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"352\" x2=\"160\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"416\" x2=\"160\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"480\" x2=\"96\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"96\" y1=\"480\" x2=\"96\" y2=\"544\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"96\" y1=\"544\" x2=\"32\" y2=\"544\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"32\" y1=\"544\" x2=\"32\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"32\" y1=\"480\" x2=\"32\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<rect x=\"22\" y=\"342\" width=\"20\" height=\"20\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" /><line x1=\"32\" y1=\"416\" x2=\"32\" y2=\"362\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<circle cx=\"352\" cy=\"352\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" r=\"10\" /><line x1=\"352\" y1=\"342\" x2=\"352\" y2=\"288\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"352\" y1=\"288\" x2=\"352\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"352\" y1=\"224\" x2=\"416\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"416\" y1=\"224\" x2=\"480\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"480\" y1=\"224\" x2=\"544\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"224\" x2=\"544\" y2=\"288\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"288\" x2=\"544\" y2=\"352\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"352\" x2=\"544\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<rect x=\"598\" y=\"406\" width=\"20\" height=\"20\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" /><line x1=\"544\" y1=\"416\" x2=\"598\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n</svg>");
+        assert_eq!(
+            output,
+            "<svg viewBox=\"0 0 640 640\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"160\" cy=\"288\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" r=\"10\" /><line x1=\"160\" y1=\"298\" x2=\"160\" y2=\"352\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"352\" x2=\"160\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"416\" x2=\"160\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"480\" x2=\"96\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"96\" y1=\"480\" x2=\"96\" y2=\"544\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"96\" y1=\"544\" x2=\"32\" y2=\"544\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"32\" y1=\"544\" x2=\"32\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"32\" y1=\"480\" x2=\"32\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<rect x=\"22\" y=\"342\" width=\"20\" height=\"20\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" /><line x1=\"32\" y1=\"416\" x2=\"32\" y2=\"362\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<circle cx=\"352\" cy=\"352\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" r=\"10\" /><line x1=\"352\" y1=\"342\" x2=\"352\" y2=\"288\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"352\" y1=\"288\" x2=\"352\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"352\" y1=\"224\" x2=\"416\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"416\" y1=\"224\" x2=\"480\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"480\" y1=\"224\" x2=\"544\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"224\" x2=\"544\" y2=\"288\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"288\" x2=\"544\" y2=\"352\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"352\" x2=\"544\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<rect x=\"598\" y=\"406\" width=\"20\" height=\"20\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" /><line x1=\"544\" y1=\"416\" x2=\"598\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n</svg>"
+        );
     }
 }

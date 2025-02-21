@@ -1,4 +1,4 @@
-use rand::{rngs::SmallRng, Rng};
+use rand::{Rng, rngs::SmallRng};
 
 use crate::map::Position;
 
@@ -125,7 +125,7 @@ impl Leaf {
 
 #[cfg(test)]
 mod test {
-    use rand::{rngs::SmallRng, SeedableRng};
+    use rand::{SeedableRng, rngs::SmallRng};
 
     use crate::{map::Position, quadtree::Leaf};
 
