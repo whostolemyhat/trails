@@ -1,12 +1,10 @@
 use clap::{Parser, Subcommand};
-use rand::rngs::SmallRng;
-use rand_seeder::Seeder;
 use std::{
     fs::{read_to_string, write},
     io,
 };
 
-use trails::{input::Input, map::Map, quadtree::Leaf, svg::Svg};
+use trails::{map::Map, svg::Svg};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -47,29 +45,6 @@ fn main() -> Result<(), io::Error> {
 
     match &args.command {
         Commands::Generate(args) => {
-            // let mut rng: SmallRng = Seeder::from(&args.seed).into_rng();
-
-            // let width = args.canvas_size;
-            // let height = args.canvas_size;
-            // let depth = 0;
-            // let mut root = Leaf::new(0, 0, width, height, args.min_leaf_size, depth);
-            // root.generate(&mut rng);
-
-            // let mut input = Input::new(width, height);
-            // let mut starting_points = vec![];
-            // root.add_start(&mut starting_points, &mut rng, args.density);
-
-            // input.add_trails(&starting_points, &mut rng);
-            // input.fill(&mut rng);
-
-            // println!("{}", input);
-            // println!("{:?}", &starting_points.len());
-
-            // let mut map = Map::parse(&format!("{}", input));
-            // map.find_all_paths();
-
-            // let svg = Svg::new(64, 32, map.width, map.height, 2, "black", 10);
-            // let output = svg.draw(&map);
             let output = trails::create(
                 &args.seed,
                 args.canvas_size,

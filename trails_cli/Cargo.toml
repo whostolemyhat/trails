@@ -7,6 +7,4 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.29", features = ["derive"] }
-rand = { version = "0.9.0", features = ["small_rng"] }
-rand_seeder = "0.4.0"
 trails = { path = "../trails" }
