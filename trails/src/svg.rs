@@ -1,4 +1,40 @@
+use std::fmt::Display;
+
 use crate::map::{Map, Position};
+
+#[derive(Debug)]
+enum Direction {
+    North,
+    East,
+    South,
+    West,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+enum LineCommand {
+    Horizontal,
+    Vertical,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+struct SvgCommand {
+    command: LineCommand,
+    distance: i16,
+}
+
+impl Display for SvgCommand {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.command {
+            LineCommand::Horizontal => {
+                write!(f, "h{}", self.distance).expect("Failed to write command");
+            }
+            LineCommand::Vertical => {
+                write!(f, "v{}", self.distance).expect("Failed to write command");
+            }
+        }
+        Ok(())
+    }
+}
 
 #[derive(PartialEq, Debug)]
 pub struct Svg<'a> {
@@ -32,13 +68,55 @@ impl<'a> Svg<'a> {
         }
     }
 
-    // TODO  use path
-    fn line(&self, x1: usize, y1: usize, x2: usize, y2: usize) -> String {
+    fn draw_path(&self, path: &str) -> String {
         format!(
-            "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\" stroke-linecap=\"square\" />\n",
-            x1, y1, x2, y2, self.colour, self.stroke_width
+            "<path d=\"{path}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\" stroke-linecap=\"square\" />",
+            self.colour, self.stroke_width
         )
     }
+
+    fn get_path(&self, points: &Vec<Position>) -> Vec<SvgCommand> {
+        let commands = points
+            .windows(2)
+            .map(|slice| self.make_command(slice[0], slice[1]))
+            .collect();
+        commands
+    }
+
+    fn make_command(&self, first: Position, second: Position) -> SvgCommand {
+        let is_horz = first.x != second.x;
+        if is_horz {
+            return SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: self.to_pixel(second.x) as i16 - self.to_pixel(first.x) as i16,
+            };
+        } else {
+            return SvgCommand {
+                command: LineCommand::Vertical,
+                distance: self.to_pixel(second.y) as i16 - self.to_pixel(first.y) as i16,
+            };
+        }
+    }
+
+    /// Combine consecutive duplicate commands
+    /// eg v64v64h16v32 -> v128h16v32
+    fn merge_commands(&self, path: Vec<SvgCommand>) -> Vec<SvgCommand> {
+        let mut output: Vec<SvgCommand> = vec![];
+
+        for (i, item) in path.iter().enumerate() {
+            if i == 0 {
+                output.push(item.clone());
+            } else if item.command == output[output.len() - 1].command {
+                let stored_index = output.len() - 1;
+                output[stored_index].distance += item.distance;
+            } else {
+                output.push(item.clone());
+            }
+        }
+
+        output
+    }
+
     fn start(&self, centre: Position) -> String {
         format!(
             "<circle cx=\"{}\" cy=\"{}\" stroke-width=\"{}\" fill=\"transparent\" stroke=\"{}\" r=\"{}\" />",
@@ -66,6 +144,21 @@ impl<'a> Svg<'a> {
         point * self.tile_size + self.offset
     }
 
+    fn get_direction(&self, first: Position, second: Position) -> Direction {
+        if first.x == second.x {
+            // if x's are equal, moving vert
+            if first.y < second.y {
+                Direction::South
+            } else {
+                Direction::North
+            }
+        } else if first.x < second.x {
+            Direction::West
+        } else {
+            Direction::East
+        }
+    }
+
     pub fn draw(&self, map: &Map) -> String {
         let mut output = format!(
             "<svg viewBox=\"0 0 {} {}\" xmlns=\"http://www.w3.org/2000/svg\">",
@@ -73,58 +166,60 @@ impl<'a> Svg<'a> {
         );
 
         map.paths.iter().for_each(|trail| {
-            let mut index = 0;
-            trail.windows(2).for_each(|slice| {
-                if index == 0 {
-                    output += &self.start(slice[0]);
-                }
-                // max index = 9, -1 because window
-                if index == 8 {
-                    output += &self.end(slice[1]);
-                }
+            let start_dir = self.get_direction(trail[0], trail[1]);
+            let end_dir = self.get_direction(trail[trail.len() - 2], trail[trail.len() - 1]);
 
-                let mut x1 = self.to_pixel(slice[0].x);
-                let mut y1 = self.to_pixel(slice[0].y);
-                let mut x2 = self.to_pixel(slice[1].x);
-                let mut y2 = self.to_pixel(slice[1].y);
+            let mut path_cmds = self.get_path(&trail);
 
-                // horz moving right
-                if slice[0].x < slice[1].x {
-                    if index == 0 {
-                        x1 += self.end_radius;
-                    } else if index == 8 {
-                        x2 -= self.end_radius;
-                    }
-                }
+            // adjust end of trail for rect
+            // -2: len - 1 for last item, and there should be one fewer edges than nodes
+            let last_index = path_cmds.len() - 1;
+            match end_dir {
+                Direction::North => path_cmds[last_index].distance += self.end_radius as i16,
+                Direction::South => path_cmds[last_index].distance -= self.end_radius as i16,
+                Direction::East => path_cmds[last_index].distance += self.end_radius as i16,
+                Direction::West => path_cmds[last_index].distance -= self.end_radius as i16,
+            };
 
-                // horz moving left
-                if slice[0].x > slice[1].x {
-                    if index == 0 {
-                        x1 -= self.end_radius;
-                    } else if index == 8 {
-                        x2 += self.end_radius;
-                    }
-                }
+            let mut start_x = self.to_pixel(trail[0].x);
+            let mut start_y = self.to_pixel(trail[0].y);
 
-                // vert moving down
-                if slice[0].y < slice[1].y {
-                    if index == 0 {
-                        y1 += self.end_radius;
-                    } else if index == 8 {
-                        y2 -= self.end_radius;
-                    }
+            match start_dir {
+                Direction::North => {
+                    start_y -= self.end_radius;
+                    path_cmds[0].distance += self.end_radius as i16;
                 }
-                // vert moving up
-                if slice[0].y > slice[1].y {
-                    if index == 0 {
-                        y1 -= self.end_radius;
-                    } else if index == 8 {
-                        y2 += self.end_radius;
-                    }
+                Direction::South => {
+                    start_y += self.end_radius;
+                    path_cmds[0].distance -= self.end_radius as i16;
                 }
-                output += &self.line(x1, y1, x2, y2);
-                index += 1;
+                Direction::East => {
+                    start_x -= self.end_radius;
+                    path_cmds[0].distance += self.end_radius as i16;
+                }
+                Direction::West => {
+                    start_x += self.end_radius;
+                    path_cmds[0].distance -= self.end_radius as i16;
+                }
+            };
+
+            // add start circle
+            output += &self.start(Position {
+                x: trail[0].x,
+                y: trail[0].y,
             });
+
+            // add end rect
+            output += &self.end(trail[trail.len() - 1]);
+
+            // add start move
+            let mut merged = format!("M{},{}", start_x, start_y);
+
+            // squash cmds
+            for cmd in self.merge_commands(path_cmds) {
+                merged += &format!("{}", cmd);
+            }
+            output += &format!("{}", self.draw_path(&merged));
         });
         output += "</svg>";
 
@@ -134,7 +229,10 @@ impl<'a> Svg<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::{map::Map, svg::Svg};
+    use crate::{
+        map::{Map, Position},
+        svg::{LineCommand, Svg, SvgCommand},
+    };
 
     #[test]
     fn it_should_create_struct() {
@@ -172,7 +270,135 @@ mod test {
 
         assert_eq!(
             output,
-            "<svg viewBox=\"0 0 640 640\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"160\" cy=\"288\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" r=\"10\" /><line x1=\"160\" y1=\"298\" x2=\"160\" y2=\"352\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"352\" x2=\"160\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"416\" x2=\"160\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"160\" y1=\"480\" x2=\"96\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"96\" y1=\"480\" x2=\"96\" y2=\"544\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"96\" y1=\"544\" x2=\"32\" y2=\"544\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"32\" y1=\"544\" x2=\"32\" y2=\"480\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"32\" y1=\"480\" x2=\"32\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<rect x=\"22\" y=\"342\" width=\"20\" height=\"20\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" /><line x1=\"32\" y1=\"416\" x2=\"32\" y2=\"362\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<circle cx=\"352\" cy=\"352\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" r=\"10\" /><line x1=\"352\" y1=\"342\" x2=\"352\" y2=\"288\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"352\" y1=\"288\" x2=\"352\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"352\" y1=\"224\" x2=\"416\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"416\" y1=\"224\" x2=\"480\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"480\" y1=\"224\" x2=\"544\" y2=\"224\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"224\" x2=\"544\" y2=\"288\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"288\" x2=\"544\" y2=\"352\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<line x1=\"544\" y1=\"352\" x2=\"544\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n<rect x=\"598\" y=\"406\" width=\"20\" height=\"20\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" /><line x1=\"544\" y1=\"416\" x2=\"598\" y2=\"416\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" />\n</svg>"
+            "<svg viewBox=\"0 0 640 640\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"160\" cy=\"288\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" r=\"10\" /><rect x=\"22\" y=\"342\" width=\"20\" height=\"20\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" /><path d=\"M160,298v182h-64v64h-64v-182\" fill=\"none\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" /><circle cx=\"352\" cy=\"352\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" r=\"10\" /><rect x=\"598\" y=\"406\" width=\"20\" height=\"20\" stroke-width=\"2\" fill=\"transparent\" stroke=\"black\" /><path d=\"M352,342v-118h192v192h54\" fill=\"none\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"square\" /></svg>"
         );
+    }
+
+    #[test]
+    fn it_should_create_path_commands() {
+        let trail = vec![
+            Position { x: 4, y: 4 },
+            Position { x: 4, y: 5 },
+            Position { x: 5, y: 5 },
+            Position { x: 6, y: 5 },
+            Position { x: 7, y: 5 },
+            Position { x: 8, y: 5 },
+            Position { x: 8, y: 4 },
+            Position { x: 8, y: 3 },
+            Position { x: 7, y: 3 },
+            Position { x: 6, y: 3 },
+        ];
+
+        let svg = Svg::new(64, 32, 10, 10, 2, "black", 10);
+        let expected = vec![
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: -64,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: -64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: -64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: -64,
+            },
+        ];
+        assert_eq!(svg.get_path(&trail), expected);
+    }
+
+    #[test]
+    fn it_merges_duplicate_commands() {
+        let path = vec![
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: 54,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: -64,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: -64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: -64,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 54,
+            },
+        ];
+        let expected = vec![
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: 54,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 64,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: -64,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 128,
+            },
+            SvgCommand {
+                command: LineCommand::Horizontal,
+                distance: -128,
+            },
+            SvgCommand {
+                command: LineCommand::Vertical,
+                distance: 118,
+            },
+        ];
+
+        let svg = Svg::new(64, 32, 10, 10, 2, "black", 10);
+        assert_eq!(svg.merge_commands(path), expected);
     }
 }
