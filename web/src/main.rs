@@ -6,7 +6,7 @@ use axum::{
 };
 use serde_derive::Deserialize;
 use std::env;
-use tower_http::trace::TraceLayer;
+use tower_http::{compression::CompressionLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use extractors::AppJson;
@@ -59,6 +59,8 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    let compression_layer = CompressionLayer::new().br(true).deflate(true).gzip(true);
+
     let settings = ApplicationSettings {
         port: env::var("PORT")
             .unwrap_or(String::from("5678"))
@@ -70,7 +72,8 @@ async fn main() {
     let app = Router::new()
         .route("/", get(home))
         .route("/api/generate", post(generate))
-        .layer(TraceLayer::new_for_http());
+        .layer(TraceLayer::new_for_http())
+        .layer(compression_layer);
 
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", settings.host, settings.port))
         .await
