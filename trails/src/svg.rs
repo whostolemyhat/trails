@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{cmp::Ordering, fmt::Display};
 
 use crate::map::{Map, Position};
 
@@ -75,7 +75,7 @@ impl<'a> Svg<'a> {
         )
     }
 
-    fn get_path(&self, points: &Vec<Position>) -> Vec<SvgCommand> {
+    fn get_path(&self, points: &[Position]) -> Vec<SvgCommand> {
         let commands = points
             .windows(2)
             .map(|slice| self.make_command(slice[0], slice[1]))
@@ -86,15 +86,15 @@ impl<'a> Svg<'a> {
     fn make_command(&self, first: Position, second: Position) -> SvgCommand {
         let is_horz = first.x != second.x;
         if is_horz {
-            return SvgCommand {
+            SvgCommand {
                 command: LineCommand::Horizontal,
                 distance: self.to_pixel(second.x) as i16 - self.to_pixel(first.x) as i16,
-            };
+            }
         } else {
-            return SvgCommand {
+            SvgCommand {
                 command: LineCommand::Vertical,
                 distance: self.to_pixel(second.y) as i16 - self.to_pixel(first.y) as i16,
-            };
+            }
         }
     }
 
@@ -105,12 +105,12 @@ impl<'a> Svg<'a> {
 
         for (i, item) in path.iter().enumerate() {
             if i == 0 {
-                output.push(item.clone());
+                output.push(*item);
             } else if item.command == output[output.len() - 1].command {
                 let stored_index = output.len() - 1;
                 output[stored_index].distance += item.distance;
             } else {
-                output.push(item.clone());
+                output.push(*item);
             }
         }
 
@@ -145,17 +145,22 @@ impl<'a> Svg<'a> {
     }
 
     fn get_direction(&self, first: Position, second: Position) -> Direction {
-        if first.x == second.x {
-            // if x's are equal, moving vert
-            if first.y < second.y {
-                Direction::South
-            } else {
-                Direction::North
+        match first.x.cmp(&second.x) {
+            Ordering::Equal => {
+                // if x's are equal, moving vert
+                if first.y < second.y {
+                    Direction::South
+                } else {
+                    Direction::North
+                }
             }
-        } else if first.x < second.x {
-            Direction::West
-        } else {
-            Direction::East
+            _ => {
+                if first.x < second.x {
+                    Direction::West
+                } else {
+                    Direction::East
+                }
+            }
         }
     }
 
@@ -169,7 +174,7 @@ impl<'a> Svg<'a> {
             let start_dir = self.get_direction(trail[0], trail[1]);
             let end_dir = self.get_direction(trail[trail.len() - 2], trail[trail.len() - 1]);
 
-            let mut path_cmds = self.get_path(&trail);
+            let mut path_cmds = self.get_path(trail);
 
             // adjust end of trail for rect
             // -2: len - 1 for last item, and there should be one fewer edges than nodes
@@ -219,7 +224,7 @@ impl<'a> Svg<'a> {
             for cmd in self.merge_commands(path_cmds) {
                 merged += &format!("{}", cmd);
             }
-            output += &format!("{}", self.draw_path(&merged));
+            output += &self.draw_path(&merged).to_string();
         });
         output += "</svg>";
 
