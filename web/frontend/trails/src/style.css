@@ -2,9 +2,11 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  --max-width: 800px;
+  --white: rgba(255, 255, 255, 0.87);
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: var(--white);
   background-color: #242424;
 
   font-synthesis: none;
@@ -24,9 +26,8 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
+
   place-items: center;
-  min-width: 320px;
   min-height: 100vh;
 }
 
@@ -35,32 +36,11 @@ h1 {
   line-height: 1.1;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #3178c6aa);
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+#image {
+  width: 100%;
+  min-height: 500px;
+  background: var(--white);
+  display: block;
 }
 
 button {
@@ -70,16 +50,86 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #e9e975;
+  color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #ffef64;
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+#options {
+  padding: 0.5rem;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+}
+
+.wrapper {
+  width: 100%;
+
+  @media screen and (min-width: 800px) {
+    display: flex;
+  }
+}
+
+.main {
+  flex-grow: 2;
+}
+
+#loading {
+  display: none;
+
+  position: absolute;
+  font-weight: bold;
+  font-size: 4rem;
+  justify-content: center;
+  padding-top: 5rem;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100%;
+  background-color: rgba(125, 67, 55, 0.4);
+  color: rgba(255, 255, 255, 0.87);
+  text-align: center;
+}
+
+#loading.isLoading {
+  display: flex;
+}
+
+#error {
+  display: none;
+  width: 100%;
+  max-width: var(--max-width);
+  padding: 0.25rem 3rem;
+  background-color: rgba(200, 45, 32, 0.4);
+  border-left: 2px solid rgba(200, 45, 32, 1);
+}
+#error.hasError {
+  display: block;
+}
+
+#error h3,
+#error p {
+  margin: 0.25rem 0;
+}
+
+.info {
+  max-width: var(--max-width);
+}
+
+input {
+  display: block;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 @media (prefers-color-scheme: light) {

@@ -7,6 +7,7 @@ edition = "2024"
 
 [dependencies]
 axum = {version = "0.8.1", features = ["macros"] }
+minijinja = "2.8.0"
 serde = "1.0.217"
 serde_derive = "1.0.217"
 serde_json = "1.0.138"

@@ -1,12 +1,19 @@
 use axum::{
     Router,
-    http::{HeaderMap, header},
-    response::IntoResponse,
+    http::{
+        HeaderMap, HeaderValue, Method,
+        header::{self, CONTENT_TYPE},
+    },
+    response::{Html, IntoResponse},
     routing::{get, post},
 };
+use minijinja::{Environment, context};
 use serde_derive::Deserialize;
-use std::env;
-use tower_http::{compression::CompressionLayer, trace::TraceLayer};
+use std::{
+    env,
+    time::{SystemTime, UNIX_EPOCH},
+};
+use tower_http::{compression::CompressionLayer, cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use extractors::AppJson;
@@ -14,13 +21,30 @@ use extractors::AppJson;
 mod err;
 mod extractors;
 
-// use path not line
 // env
 // serve static
-// cors
+// template
 
-async fn home() -> &'static str {
-    "Hello world!"
+async fn home() -> impl IntoResponse {
+    let mut env = Environment::new();
+    env.add_template("home", include_str!("../frontend/trails/index.html"))
+        .expect("Failed to load template");
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Somehow time has failed")
+        .as_millis();
+    let template = env.get_template("home").expect("Couldn't get template");
+
+    let density = 2;
+    let canvas_size = 45;
+    let leaf_size = 3;
+    let image = trails::create(&now.to_string(), canvas_size, leaf_size, density);
+
+    Html(
+        template
+            .render(context! { seed => now, image => image })
+            .expect("Failed to render"),
+    )
 }
 
 #[derive(Debug, Deserialize)]
@@ -59,7 +83,11 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let compression_layer = CompressionLayer::new().br(true).deflate(true).gzip(true);
+    let compression_layer = CompressionLayer::new()
+        .br(true)
+        .deflate(true)
+        .gzip(true)
+        .zstd(true);
 
     let settings = ApplicationSettings {
         port: env::var("PORT")
@@ -69,11 +97,18 @@ async fn main() {
         host: env::var("HOST").unwrap_or("localhost".into()),
     };
 
+    let cors = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([CONTENT_TYPE])
+        // TODO
+        .allow_origin("http://localhost:5173".parse::<HeaderValue>().unwrap());
+
     let app = Router::new()
         .route("/", get(home))
         .route("/api/generate", post(generate))
         .layer(TraceLayer::new_for_http())
-        .layer(compression_layer);
+        .layer(compression_layer)
+        .layer(cors);
 
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", settings.host, settings.port))
         .await

@@ -29,6 +29,6 @@ pub fn create(seed: &String, canvas_size: usize, min_leaf_size: usize, density: 
     let mut map = Map::parse(&format!("{}", input));
     map.find_all_paths();
 
-    let svg = Svg::new(64, 32, map.width, map.height, 2, "black", 10);
+    let svg = Svg::new(32, 16, map.width, map.height, 2, "black", 10);
     svg.draw(&map)
 }
