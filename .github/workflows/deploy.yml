@@ -38,4 +38,4 @@ jobs:
       - name: Build
         run: cd web/frontend && npm run build
       - name: Deploy
-        run: rsync -avz ./web/frontend/dist ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}:${{secrets.STATIC_FOLDER}}
+        run: rsync -avzr ./web/frontend/dist ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}:${{secrets.STATIC_FOLDER}}

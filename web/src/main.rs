@@ -27,7 +27,8 @@ mod extractors;
 
 async fn home() -> impl IntoResponse {
     let mut env = Environment::new();
-    env.add_template("home", include_str!("../frontend/trails/index.html"))
+    // TODO
+    env.add_template("home", include_str!("../frontend/index.html"))
         .expect("Failed to load template");
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
