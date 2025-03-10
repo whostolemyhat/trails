@@ -22,3 +22,5 @@ Cargo.lock
 
 
 input.txt
+
+web/frontend/dist/

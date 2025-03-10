@@ -1,0 +1,146 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  --max-width: 800px;
+  --white: rgba(255, 255, 255, 0.87);
+
+  color-scheme: light dark;
+  color: var(--white);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+
+  place-items: center;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+#image {
+  width: 100%;
+  min-height: 500px;
+  background: var(--white);
+  display: block;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #e9e975;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #ffef64;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+#options {
+  padding: 0.5rem;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+}
+
+.wrapper {
+  width: 100%;
+
+  @media screen and (min-width: 800px) {
+    display: flex;
+  }
+}
+
+.main {
+  flex-grow: 2;
+}
+
+#loading {
+  display: none;
+
+  position: absolute;
+  font-weight: bold;
+  font-size: 4rem;
+  justify-content: center;
+  padding-top: 5rem;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100%;
+  background-color: rgba(125, 67, 55, 0.4);
+  color: rgba(255, 255, 255, 0.87);
+  text-align: center;
+}
+
+#loading.isLoading {
+  display: flex;
+}
+
+#error {
+  display: none;
+  width: 100%;
+  max-width: var(--max-width);
+  padding: 0.25rem 3rem;
+  background-color: rgba(200, 45, 32, 0.4);
+  border-left: 2px solid rgba(200, 45, 32, 1);
+}
+#error.hasError {
+  display: block;
+}
+
+#error h3,
+#error p {
+  margin: 0.25rem 0;
+}
+
+.info {
+  max-width: var(--max-width);
+}
+
+input {
+  display: block;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trails</title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="">
+
+  <meta property="og:title" content="Trails">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://trails.jamesbaum.co.uk">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <!-- <link rel="icon" href="/favicon.ico" sizes="any">
+   <link rel="apple-touch-icon" href="icon.png"> -->
+
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+    <div class="wrapper">
+      <form action="/api/generate" method="/post" id="options">
+        <label>Seed <input type="text" value="{{ seed }}" name="seed" /></label>
+        <label>Density (1-10) <input type="number" min="1" max="10" name="density" value="2" pattern="[0-9]{1}" /></label>
+        <label>Canvas size (max 100) <input type="nunber" min="1" max="99" name="canvasSize" value="45" pattern="[0-9]{1,2}" /></label>
+        <label>Min leaf size (1-3) <input type="number" min="1" max="10" name="minLeafSize" value="3" pattern="[0-9]{1}" /></label>
+        <button id="submit">Ok go!</button>
+      </form>
+
+      <main class="main">
+        <div id="error"><h3>Something went wrong!</h3><p>Please try again.</p></div>
+
+        <main id="image">{{ image }}</main>
+        <div id="loading">Loading...</div>
+        <button>Download</button>
+      </main>
+    </div>
+
+    <footer>
+      <aside class="info">
+        <h2>About</h2>
+        <p>Create procedural art by altering the options. <strong>Seed</strong> can be any text - changing it will alter the generated image. Using the same seed and options will always create the same image.
+          <strong>Density</strong> will try to add more starting points per leaf. <strong>Min leaf size</strong> controls how large the leaves containing starting points are - larger means fewer leaves in the image.
+          <strong>Canvas size</strong> controls the size of the image.
+        </p>
+      </aside>
+      Created by <a href="https://www.jamesbaum.co.uk" title="My site">James Baum</a>
+    </footer>
+    
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
