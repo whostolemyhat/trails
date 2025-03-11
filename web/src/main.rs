@@ -30,6 +30,7 @@ async fn home() -> impl IntoResponse {
     let template_path = env::var("TEMPLATE_PATH").unwrap_or(String::from("./frontend/dist"));
     let mut app_env = Environment::new();
     let index_template = format!("{}/index.html", template_path);
+    dbg!(&index_template);
     let template_content = read_to_string(index_template).expect("Couldn't read template");
 
     app_env
