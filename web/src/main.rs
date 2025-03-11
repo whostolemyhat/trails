@@ -11,6 +11,7 @@ use minijinja::{Environment, context};
 use serde_derive::Deserialize;
 use std::{
     env,
+    fs::read_to_string,
     time::{SystemTime, UNIX_EPOCH},
 };
 use tower_http::{compression::CompressionLayer, cors::CorsLayer, trace::TraceLayer};
@@ -26,15 +27,19 @@ mod extractors;
 // template
 
 async fn home() -> impl IntoResponse {
-    let mut env = Environment::new();
-    // TODO
-    env.add_template("home", include_str!("../frontend/index.html"))
+    let template_path = env::var("TEMPLATE_PATH").unwrap_or(String::from("./frontend/dist"));
+    let mut app_env = Environment::new();
+    let index_template = format!("{}/index.html", template_path);
+    let template_content = read_to_string(index_template).expect("Couldn't read template");
+
+    app_env
+        .add_template("home", &template_content)
         .expect("Failed to load template");
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("Somehow time has failed")
         .as_millis();
-    let template = env.get_template("home").expect("Couldn't get template");
+    let template = app_env.get_template("home").expect("Couldn't get template");
 
     let density = 2;
     let canvas_size = 45;
