@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - name: Install deps
@@ -30,7 +30,7 @@ jobs:
         run: rsync -avz ./target/release/trails_web ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}:${{secrets.DEST_FOLDER}}
 
   deploy-frontend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - name: Install
