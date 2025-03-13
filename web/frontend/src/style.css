@@ -38,7 +38,8 @@ h1 {
 
 #image {
   width: 100%;
-  min-height: 500px;
+  max-width: 1200px;
+  /* min-height: 100vw; */
   background: var(--white);
   display: block;
 }
@@ -82,21 +83,24 @@ label {
 
 .main {
   flex-grow: 2;
+  /* position: relative; */
 }
 
 #loading {
   display: none;
+  /* display: flex; */
 
-  position: absolute;
-  font-weight: bold;
-  font-size: 4rem;
   justify-content: center;
-  padding-top: 5rem;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.6rem;
+  position: fixed;
   top: 0;
+  bottom: 0;
+  right: 0;
   left: 0;
-  height: 100vh;
-  width: 100%;
-  background-color: rgba(125, 67, 55, 0.4);
+  background-color: rgba(22, 32, 23, 0.4);
+  text-shadow: 1px 1px 5px rgba(22, 32, 23, 0.8);
   color: rgba(255, 255, 255, 0.87);
   text-align: center;
 }
@@ -132,7 +136,7 @@ input {
   margin-bottom: 0.5rem;
 }
 
-@media (prefers-color-scheme: light) {
+/* @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
@@ -143,4 +147,4 @@ input {
   button {
     background-color: #f9f9f9;
   }
-}
+} */

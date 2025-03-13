@@ -22,10 +22,6 @@ use extractors::AppJson;
 mod err;
 mod extractors;
 
-// env
-// serve static
-// template
-
 async fn home() -> impl IntoResponse {
     let template_path = env::var("TEMPLATE_PATH").unwrap_or(String::from("./frontend/dist"));
     let mut app_env = Environment::new();
@@ -49,7 +45,7 @@ async fn home() -> impl IntoResponse {
 
     Html(
         template
-            .render(context! { seed => now, image => image })
+            .render(context! { seed => now, image => image, density => 2, size => 45, leaf => 3 })
             .expect("Failed to render"),
     )
 }
