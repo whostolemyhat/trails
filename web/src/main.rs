@@ -1,7 +1,7 @@
 use axum::{
     Router,
     http::{
-        HeaderMap, HeaderValue, Method,
+        HeaderMap, HeaderValue, Method, StatusCode,
         header::{self, CONTENT_TYPE},
     },
     response::{Html, IntoResponse},
@@ -75,6 +75,10 @@ async fn generate(AppJson(payload): AppJson<Payload>) -> impl IntoResponse {
     (headers, image)
 }
 
+async fn not_found() -> impl IntoResponse {
+    StatusCode::NOT_FOUND
+}
+
 struct ApplicationSettings {
     port: u16,
     host: String,
@@ -109,6 +113,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(home))
         .route("/api/generate", post(generate))
+        .fallback(not_found)
         .layer(TraceLayer::new_for_http())
         .layer(compression_layer)
         .layer(cors);
