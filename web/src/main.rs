@@ -26,7 +26,6 @@ async fn home() -> impl IntoResponse {
     let template_path = env::var("TEMPLATE_PATH").unwrap_or(String::from("./frontend/dist"));
     let mut app_env = Environment::new();
     let index_template = format!("{}/index.html", template_path);
-    dbg!(&index_template);
     let template_content = read_to_string(index_template).expect("Couldn't read template");
 
     app_env
@@ -76,7 +75,11 @@ async fn generate(AppJson(payload): AppJson<Payload>) -> impl IntoResponse {
 }
 
 async fn not_found() -> impl IntoResponse {
-    StatusCode::NOT_FOUND
+    let template_path = env::var("TEMPLATE_PATH").unwrap_or(String::from("./frontend/dist"));
+    let template = format!("{}/404.html", template_path);
+    let template_content = read_to_string(template).expect("Couldn't read template");
+
+    (StatusCode::NOT_FOUND, Html(template_content))
 }
 
 struct ApplicationSettings {
