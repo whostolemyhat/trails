@@ -1,62 +1,89 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Page Not Found</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      * {
+        line-height: 1.2;
+        margin: 0;
+      }
 
-<head>
-  <meta charset="utf-8">
-  <title>Page Not Found</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    * {
-      line-height: 1.2;
-      margin: 0;
-    }
+      html {
+        color: #888;
+        display: table;
+        font-family: sans-serif;
+        height: 100%;
+        text-align: center;
+        width: 100%;
+      }
 
-    html {
-      color: #888;
-      display: table;
-      font-family: sans-serif;
-      height: 100%;
-      text-align: center;
-      width: 100%;
-    }
-
-    body {
-      display: table-cell;
-      vertical-align: middle;
-      margin: 2em auto;
-    }
-
-    h1 {
-      color: #555;
-      font-size: 2em;
-      font-weight: 400;
-    }
-
-    p {
-      margin: 0 auto;
-      width: 280px;
-    }
-
-    @media only screen and (max-width: 280px) {
-
-      body,
-      p {
-        width: 95%;
+      body {
+        display: table-cell;
+        vertical-align: middle;
+        margin: 2em auto;
       }
 
       h1 {
-        font-size: 1.5em;
-        margin: 0 0 0.3em;
+        color: #555;
+        font-size: 2em;
+        font-weight: 400;
       }
 
-    }
-  </style>
-</head>
+      p {
+        margin: 0 auto;
+        width: 280px;
+      }
 
-<body>
-  <h1>Page Not Found</h1>
-  <p>Sorry, but the page you were trying to view does not exist.</p>
-  <p><a href="/" title="Back to home page">View the homepage</a></p>
-</body>
+      @media only screen and (max-width: 280px) {
+        body,
+        p {
+          width: 95%;
+        }
 
+        h1 {
+          font-size: 1.5em;
+          margin: 0 0 0.3em;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Page Not Found</h1>
+    <p>Sorry, but the page you were trying to view does not exist.</p>
+    <p><a href="/" title="Back to home page">View the homepage</a></p>
+    <script type="text/javascript">
+      (function (window, document, dataLayerName, id) {
+        (window[dataLayerName] = window[dataLayerName] || []),
+          window[dataLayerName].push({ start: new Date().getTime(), event: 'stg.start' });
+        var scripts = document.getElementsByTagName('script')[0],
+          tags = document.createElement('script');
+        var qP = [];
+        dataLayerName !== 'dataLayer' && qP.push('data_layer_name=' + dataLayerName);
+        var qPString = qP.length > 0 ? '?' + qP.join('&') : '';
+        (tags.async = !0),
+          (tags.src = 'https://jamesbaum.containers.piwik.pro/' + id + '.js' + qPString),
+          scripts.parentNode.insertBefore(tags, scripts);
+        !(function (a, n, i) {
+          a[n] = a[n] || {};
+          for (var c = 0; c < i.length; c++)
+            !(function (i) {
+              (a[n][i] = a[n][i] || {}),
+                (a[n][i].api =
+                  a[n][i].api ||
+                  function () {
+                    var a = [].slice.call(arguments, 0);
+                    'string' == typeof a[0] &&
+                      window[dataLayerName].push({
+                        event: n + '.' + i + ':' + a[0],
+                        parameters: [].slice.call(arguments, 1),
+                      });
+                  });
+            })(i[c]);
+        })(window, 'ppms', ['tm', 'cm']);
+      })(window, document, 'dataLayer', 'fba94c5c-d966-40d5-b29d-75813a44550b');
+    </script>
+  </body>
 </html>
