@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <title>Page Not Found</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <style>
       * {
         line-height: 1.2;
@@ -11,32 +12,32 @@
       }
 
       html {
-        color: #888;
-        display: table;
-        font-family: sans-serif;
+        font-family: Helvetica, Arial, sans-serif;
         height: 100%;
         text-align: center;
         width: 100%;
       }
 
       body {
-        display: table-cell;
-        vertical-align: middle;
-        margin: 2em auto;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
 
       h1 {
-        color: #555;
+        font-family: 'Verdana', 'Geneva', 'Arial', sans-serif;
         font-size: 2em;
+        margin-bottom: 2rem;
         font-weight: 400;
       }
 
       p {
-        margin: 0 auto;
-        width: 280px;
+        margin: 0 auto 0.5rem;
+        width: 425px;
       }
 
-      @media only screen and (max-width: 280px) {
+      @media only screen and (max-width: 425px) {
         body,
         p {
           width: 95%;
@@ -44,16 +45,324 @@
 
         h1 {
           font-size: 1.5em;
-          margin: 0 0 0.3em;
+          margin: 0 0 1em;
         }
+      }
+
+      svg {
+        position: absolute;
+        width: 100%;
+        height: auto;
+        opacity: 0.2;
+        z-index: -1;
       }
     </style>
   </head>
 
   <body>
+    <svg xmlns="http://www.w3.org/currentColor/svg" viewBox="0 0 512 512">
+      <circle cx="144" cy="16" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M358 70h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M154 16h22v32h192v22"
+      />
+      <circle cx="336" cy="16" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M358 134h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M346 16h54v32h32v64h-32v32h-22"
+      />
+      <circle cx="336" cy="16" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M358 134h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M346 16h86v96h-32v32h-22"
+      />
+      <circle cx="496" cy="16" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 134h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M486 16h-22v96h32v64h-32v-22"
+      />
+      <circle cx="496" cy="16" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 134h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M486 16h-22v64h32v96h-32v-22"
+      />
+      <circle cx="80" cy="48" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M134 70h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M70 48H16V16h96v32h32v22"
+      />
+      <circle cx="80" cy="48" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M70 134h20v20H70z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M70 48H16v64h32v64h32v-22"
+      />
+      <circle cx="48" cy="80" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M134 70h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M48 70V48H16V16h96v32h32v22"
+      />
+      <circle cx="48" cy="80" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M70 134h20v20H70z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M48 70V48H16v64h32v64h32v-22"
+      />
+      <circle cx="176" cy="112" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M358 70h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M176 102V48h192v22"
+      />
+      <circle cx="176" cy="112" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M358 70h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M176 102V80h32V48h160v22"
+      />
+      <circle cx="176" cy="112" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M358 70h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M176 102V80h64V48h128v22"
+      />
+      <circle cx="240" cy="176" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M198 166h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M250 176h54v-32h-64v-32h-32v54"
+      />
+      <circle cx="80" cy="208" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M102 326h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M80 218v54H48v64h32v-32h32v22"
+      />
+      <circle cx="368" cy="208" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 134h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M368 198v-22h64v64h32v-86"
+      />
+      <circle cx="496" cy="208" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M486 422h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M496 218v54h-32v32h32v118"
+      />
+      <circle cx="496" cy="208" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M496 218v54h-32v32h32v64h-32v22"
+      />
+      <circle cx="496" cy="208" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M496 218v54h-32v32h32v32h-32v54"
+      />
+      <circle cx="496" cy="208" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M496 218v54h-32v32h-32v32h32v54"
+      />
+      <circle cx="272" cy="240" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M102 230h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M272 250v54h-96v-32h-64v-22"
+      />
+      <circle cx="400" cy="240" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M486 422h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M400 250v22h64v32h32v118"
+      />
+      <circle cx="400" cy="240" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M400 250v22h64v32h32v64h-32v22"
+      />
+      <circle cx="400" cy="240" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M400 250v22h64v32h32v32h-32v54"
+      />
+      <circle cx="400" cy="240" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M400 250v22h64v32h-32v32h32v54"
+      />
+      <circle cx="240" cy="272" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M102 230h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M250 272h22v32h-96v-32h-64v-22"
+      />
+      <circle cx="368" cy="272" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M486 422h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M378 272h86v32h32v118"
+      />
+      <circle cx="368" cy="272" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M378 272h86v32h32v64h-32v22"
+      />
+      <circle cx="368" cy="272" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M378 272h86v32h32v32h-32v54"
+      />
+      <circle cx="368" cy="272" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M454 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M378 272h86v32h-32v32h32v54"
+      />
+      <circle cx="48" cy="368" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M70 422h20v20H70z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M48 378v22H16v96h32v-32h32v-22"
+      />
+      <circle cx="272" cy="400" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M70 486h20v20H70z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M272 410v86H90"
+      />
+      <circle cx="304" cy="432" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M70 486h20v20H70z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M294 432h-22v64H90"
+      />
+      <circle cx="496" cy="496" r="10" fill="transparent" stroke="currentColor" stroke-width="2" />
+      <path fill="transparent" stroke="currentColor" stroke-width="2" d="M358 390h20v20h-20z" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M496 486v-22h-32v-32H336v-32h22"
+      />
+    </svg>
     <h1>Page Not Found</h1>
     <p>Sorry, but the page you were trying to view does not exist.</p>
     <p><a href="/" title="Back to home page">View the homepage</a></p>
+
     <script type="text/javascript">
       (function (window, document, dataLayerName, id) {
         (window[dataLayerName] = window[dataLayerName] || []),

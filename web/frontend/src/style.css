@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   --max-width: 800px;
@@ -33,6 +33,7 @@ body {
 }
 
 h1 {
+  font-family: 'Verdana', 'Geneva', 'Arial', sans-serif;
   font-size: 3.2em;
   line-height: 1.1;
 }
@@ -151,18 +152,22 @@ footer {
 }
 
 footer h2 {
+  font-family: 'Verdana', 'Geneva', 'Arial', sans-serif;
   margin-top: 0;
 }
 
-/* @media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
+  }
+  a {
+    color: #242424;
   }
   a:hover {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+    /* background-color: #f9f9f9; */
   }
-} */
+}
