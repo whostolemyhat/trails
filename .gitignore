@@ -25,3 +25,5 @@ input.txt
 
 web/frontend/dist/
 node_modules/
+
+.env

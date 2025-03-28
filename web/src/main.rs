@@ -1,7 +1,7 @@
 use axum::{
     Router,
     http::{
-        HeaderMap, HeaderValue, Method, StatusCode,
+        HeaderMap, Method, StatusCode,
         header::{self, CONTENT_TYPE},
     },
     response::{Html, IntoResponse},
@@ -14,7 +14,9 @@ use std::{
     fs::read_to_string,
     time::{SystemTime, UNIX_EPOCH},
 };
-use tower_http::{compression::CompressionLayer, cors::CorsLayer, trace::TraceLayer};
+use tower_http::{
+    compression::CompressionLayer, cors::CorsLayer, services::ServeDir, trace::TraceLayer,
+};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use extractors::AppJson;
@@ -59,6 +61,11 @@ struct Payload {
 }
 
 async fn generate(AppJson(payload): AppJson<Payload>) -> impl IntoResponse {
+    // validation
+    if payload.canvas_size > 200 || payload.min_leaf_size > 10 || payload.density > 15 {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
+
     let image = trails::create(
         &payload.seed,
         payload.canvas_size,
@@ -71,7 +78,7 @@ async fn generate(AppJson(payload): AppJson<Payload>) -> impl IntoResponse {
         "image/svg+xml".parse().expect("Failed to add svg header"),
     );
 
-    (headers, image)
+    (headers, image).into_response()
 }
 
 async fn not_found() -> impl IntoResponse {
@@ -109,13 +116,13 @@ async fn main() {
 
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
-        .allow_headers([CONTENT_TYPE])
-        // TODO
-        .allow_origin("http://localhost:5173".parse::<HeaderValue>().unwrap());
+        .allow_headers([CONTENT_TYPE]);
 
     let app = Router::new()
         .route("/", get(home))
         .route("/api/generate", post(generate))
+        //  only in local dev
+        .nest_service("/assets", ServeDir::new("./frontend/dist/assets"))
         .fallback(not_found)
         .layer(TraceLayer::new_for_http())
         .layer(compression_layer)
