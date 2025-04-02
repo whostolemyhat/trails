@@ -88,6 +88,7 @@ impl Map {
     }
 
     // nicked from https://www.technical-recipes.com/2011/a-recursive-algorithm-to-find-all-paths-between-two-given-nodes/
+    // depth-first but backtracks to find all routes through a trail
     fn get_paths(&mut self, visited: &mut VecDeque<Position>, end: u8) {
         // get last element
         let current = visited.back().expect("Empty");

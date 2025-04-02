@@ -29,7 +29,6 @@ struct GenerateArgs {
     min_leaf_size: usize,
     #[arg(short, long, default_value_t = 45)]
     canvas_size: usize,
-    input: Option<String>,
     #[arg(short, long, default_value_t = 2)]
     density: u8,
 }
@@ -52,7 +51,7 @@ fn main() -> Result<(), io::Error> {
                 args.density,
             );
 
-            write("./test.svg", output)?;
+            write(format!("./trail-{}.svg", args.seed), output)?;
 
             Ok(())
         }
@@ -66,7 +65,7 @@ fn main() -> Result<(), io::Error> {
             let svg = Svg::new(64, 32, map.width, map.height, 2, "black", 10);
             let output = svg.draw(&map);
 
-            write("./test.svg", output)?;
+            write("./trail.svg", output)?;
             Ok(())
         }
     }

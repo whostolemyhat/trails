@@ -73,7 +73,7 @@ async function handleForm(e: SubmitEvent) {
 function handleDownload() {
   const image = document.querySelector('#image')!.innerHTML;
   const svgBlob = new Blob([image], { type: 'image/svg+xml;charset=utf-8' });
-  var svgUrl = URL.createObjectURL(svgBlob);
+  const svgUrl = URL.createObjectURL(svgBlob);
   const link = document.createElement('a');
   link.href = svgUrl;
   link.download = `${cache.seed}-${cache.density}-${cache.canvasSize}-${cache.minLeafSize}.svg`;
